@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>LMS Courses</title>
+
+<style>
+body {
+  font-family: Arial;
+  margin: 0;
+  background: #f5f7fb;
+}
+
+/* Header */
+.header {
+  background: #2563eb;
+  color: white;
+  padding: 15px;
+  text-align: center;
+}
+
+.search-box {
+  margin: 20px auto;
+  text-align: center;
+}
+
+.search-box input {
+  width: 60%;
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  outline: none;
+}
+
+/* Grid */
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+  padding: 20px;
+}
+
+/* Card */
+.card {
+  background: white;
+  width: 260px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.card img {
+  width: 100%;
+}
+
+.card-body {
+  padding: 10px;
+}
+
+.rating {
+  color: #f59e0b;
+}
+
+/* Player */
+.player {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.8);
+  display: none;
+  justify-content: center;
+  align-items: center;
+}
+
+.player iframe {
+  width: 70%;
+  height: 70%;
+}
+
+.close {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  color: white;
+  font-size: 30px;
+  cursor: pointer;
+}
+</style>
+
+</head>
+<body>
+
+<div class="header">
+  <h1>🎓 LMS Courses</h1>
+</div>
+
+<div class="search-box">
+  <input type="text" placeholder="Search courses..." onkeyup="searchCourse(this.value)">
+</div>
+
+<div id="courseGrid" class="grid"></div>
+
+<!-- Video Player -->
+<div id="player" class="player">
+  <span class="close" onclick="closePlayer()">✖</span>
+  <iframe id="videoFrame" src="" allowfullscreen></iframe>
+</div>
+
+<script>
+// DEMO DATA
+const courses = [
+  {name:"Python Basics", instructor:"John Doe", rating:"4.5", id:"rfscVS0vtbw"},
+  {name:"JavaScript Crash", instructor:"Alice", rating:"4.7", id:"hdI2bqOjy3c"},
+  {name:"React JS", instructor:"David", rating:"4.6", id:"w7ejDZ8SWv8"},
+  {name:"Machine Learning", instructor:"Andrew", rating:"4.8", id:"GwIo3gDZCVQ"}
+];
+
+// LOAD
+function loadCourses(list){
+  courseGrid.innerHTML='';
+  list.forEach(c=>{
+    let div=document.createElement('div');
+    div.className='card';
+    div.onclick=()=>playVideo(c.id);
+
+    div.innerHTML=`
+      <img src="https://img.youtube.com/vi/${c.id}/0.jpg">
+      <div class="card-body">
+        <h3>${c.name}</h3>
+        <p>👨‍🏫 ${c.instructor}</p>
+        <p class="rating">⭐ ${c.rating}</p>
+      </div>
+    `;
+    courseGrid.appendChild(div);
+  });
+}
+
+// SEARCH
+function searchCourse(q){
+  let filtered = courses.filter(c => 
+    c.name.toLowerCase().includes(q.toLowerCase())
+  );
+  loadCourses(filtered);
+}
+
+// PLAYER
+function playVideo(id){
+  player.style.display='flex';
+  videoFrame.src = `https://www.youtube.com/embed/${id}`;
+}
+
+function closePlayer(){
+  player.style.display='none';
+  videoFrame.src='';
+}
+
+// INIT
+loadCourses(courses);
+</script>
+
+</body>
+</html>
