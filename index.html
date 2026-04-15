@@ -5,95 +5,115 @@
 <title>LMS Courses</title>
 
 <style>
-body {
-  font-family: Arial;
-  margin: 0;
-  background: #f5f7fb;
+body { font-family: Arial; margin:0; background:#f5f7fb; }
+
+/* LOGIN */
+.center { display:flex; justify-content:center; align-items:center; height:100vh; }
+.login-box {
+  background:white; padding:30px;
+  border-radius:12px;
+  box-shadow:0 4px 15px rgba(0,0,0,0.1);
+  width:300px;
+}
+input {
+  width:100%; padding:10px; margin:8px 0;
+  border-radius:6px; border:1px solid #ccc;
+}
+button {
+  padding:10px;
+  background:#2563eb; color:white;
+  border:none; border-radius:6px;
+  cursor:pointer;
 }
 
-/* Header */
+/* HEADER */
 .header {
-  background: #2563eb;
-  color: white;
-  padding: 15px;
-  text-align: center;
+  background:#2563eb;
+  color:white;
+  padding:15px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
 }
 
-.search-box {
-  margin: 20px auto;
-  text-align: center;
+/* SUBSCRIPTION ALERT */
+.subscription {
+  background:#fff3cd;
+  color:#856404;
+  padding:10px;
+  text-align:center;
+  font-weight:bold;
+}
+.subscription button {
+  margin-left:10px;
+  background:#10b981;
 }
 
-.search-box input {
-  width: 60%;
-  padding: 12px;
-  border-radius: 8px;
-  border: none;
-  outline: none;
-}
+/* SEARCH */
+.search-box { margin:20px; text-align:center; }
+.search-box input { width:60%; }
 
-/* Grid */
+/* GRID */
 .grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  justify-content: center;
-  padding: 20px;
+  display:flex; flex-wrap:wrap; gap:20px;
+  justify-content:center; padding:20px;
 }
 
-/* Card */
+/* CARD */
 .card {
-  background: white;
-  width: 260px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  overflow: hidden;
-  cursor: pointer;
+  background:white; width:260px;
+  border-radius:12px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.1);
+  overflow:hidden;
+  cursor:pointer;
 }
+.card img { width:100%; }
+.card-body { padding:10px; }
+.rating { color:#f59e0b; }
 
-.card img {
-  width: 100%;
-}
-
-.card-body {
-  padding: 10px;
-}
-
-.rating {
-  color: #f59e0b;
-}
-
-/* Player */
+/* PLAYER */
 .player {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(0,0,0,0.8);
-  display: none;
-  justify-content: center;
-  align-items: center;
+  position:fixed; top:0; left:0;
+  width:100%; height:100%;
+  background:rgba(0,0,0,0.8);
+  display:none; justify-content:center; align-items:center;
 }
-
-.player iframe {
-  width: 70%;
-  height: 70%;
-}
-
+.player iframe { width:70%; height:70%; }
 .close {
-  position: absolute;
-  top: 20px;
-  right: 30px;
-  color: white;
-  font-size: 30px;
-  cursor: pointer;
+  position:absolute; top:20px; right:30px;
+  color:white; font-size:30px; cursor:pointer;
 }
+
+.hidden { display:none; }
 </style>
 
 </head>
 <body>
 
+<!-- LOGIN -->
+<div id="loginPage" class="center">
+  <div class="login-box">
+    <h2>Candidate Login</h2>
+    <input id="candidateName" placeholder="Enter Your Name">
+    <button onclick="login()">Login</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" class="hidden">
+
 <div class="header">
-  <h1>🎓 LMS Courses</h1>
+  <h2>🎓 LMS Courses</h2>
+  <div>
+    <span id="welcomeText"></span>
+    <button onclick="logout()">Logout</button>
+  </div>
+</div>
+
+<!-- SUBSCRIPTION ALERT -->
+<div id="subscriptionBox" class="subscription hidden">
+  <span id="subText"></span>
+  <button onclick="renewSubscription()">Subscribe Yearly</button>
 </div>
 
 <div class="search-box">
@@ -102,13 +122,71 @@ body {
 
 <div id="courseGrid" class="grid"></div>
 
-<!-- Video Player -->
+</div>
+
+<!-- PLAYER -->
 <div id="player" class="player">
   <span class="close" onclick="closePlayer()">✖</span>
   <iframe id="videoFrame" src="" allowfullscreen></iframe>
 </div>
 
 <script>
+// SESSION
+if(localStorage.getItem('user')){
+  showApp(localStorage.getItem('user'));
+}
+
+// LOGIN
+function login(){
+  let name = candidateName.value;
+  if(!name) return alert("Enter name");
+
+  localStorage.setItem('user', name);
+
+  // set trial subscription (7 days)
+  if(!localStorage.getItem('expiry')){
+    let expiry = new Date();
+    expiry.setDate(expiry.getDate() + 7);
+    localStorage.setItem('expiry', expiry);
+  }
+
+  showApp(name);
+}
+
+function logout(){
+  localStorage.clear();
+  location.reload();
+}
+
+function showApp(name){
+  loginPage.classList.add('hidden');
+  app.classList.remove('hidden');
+  welcomeText.innerText = "Hello, " + name;
+  checkSubscription();
+  loadCourses(courses);
+}
+
+// SUBSCRIPTION CHECK
+function checkSubscription(){
+  let expiry = new Date(localStorage.getItem('expiry'));
+  let today = new Date();
+  let diff = Math.ceil((expiry - today)/(1000*60*60*24));
+
+  if(diff <= 5){
+    subscriptionBox.classList.remove('hidden');
+    subText.innerText = `⚠️ Subscription expiring in ${diff} days`;
+  }
+}
+
+// RENEW
+function renewSubscription(){
+  let expiry = new Date();
+  expiry.setFullYear(expiry.getFullYear() + 1);
+  localStorage.setItem('expiry', expiry);
+  alert("🎉 Subscribed for 1 year!");
+  subscriptionBox.classList.add('hidden');
+}
+
 // DEMO DATA
 const courses = [
   {name:"Python Basics", instructor:"John Doe", rating:"4.5", id:"rfscVS0vtbw"},
@@ -155,9 +233,6 @@ function closePlayer(){
   player.style.display='none';
   videoFrame.src='';
 }
-
-// INIT
-loadCourses(courses);
 </script>
 
 </body>
